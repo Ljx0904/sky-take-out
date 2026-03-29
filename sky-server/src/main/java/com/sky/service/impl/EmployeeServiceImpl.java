@@ -9,6 +9,7 @@ import com.sky.context.BaseContext;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.EmployeePageQueryDTO;
+import com.sky.dto.PasswordEditDTO;
 import com.sky.entity.Employee;
 import com.sky.exception.AccountLockedException;
 import com.sky.exception.AccountNotFoundException;
@@ -93,6 +94,11 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     }
 
+    /**
+     * 分页查询
+     * @param employeePageQueryDTO
+     * @return
+     */
     @Override
     public PageResult empPage(EmployeePageQueryDTO employeePageQueryDTO) {
         PageHelper.startPage(employeePageQueryDTO.getPage(),employeePageQueryDTO.getPageSize());
@@ -101,6 +107,69 @@ public class EmployeeServiceImpl implements EmployeeService {
         PageResult pageResult=new PageResult(list.getTotal(),list.getResult());
 
         return pageResult;
+    }
+
+    /**
+     * 启用禁用员工账号
+     * @param status
+     * @param id
+     */
+    @Override
+    public void status(Long id, Integer status) {
+        Employee employee = Employee.builder()
+                .status(status)
+                .id(id)
+                .updateTime(LocalDateTime.now())
+                .updateUser(BaseContext.getCurrentId())
+                .build();
+        employeeMapper.update(employee);
+
+    }
+
+    /**
+     * 根据id查询员工信息
+     * @param id
+     * @return
+     */
+    @Override
+    public Employee getById(Long id) {
+        Employee employee = employeeMapper.getById(id);
+        return employee;
+    }
+
+    /**
+     * 编辑员工信息
+     * @param employeeDTO
+     */
+    @Override
+    public void update(EmployeeDTO employeeDTO) {
+        Employee employee = new Employee();
+        BeanUtils.copyProperties(employeeDTO,employee);
+        employee.setUpdateTime(LocalDateTime.now());
+        employee.setUpdateUser(BaseContext.getCurrentId());
+        employeeMapper.update(employee);
+    }
+
+    /**
+     * 修改员工密码
+
+     */
+    @Override
+    public void editPassword(PasswordEditDTO passwordEditDTO) {
+        Long id = BaseContext.getCurrentId();
+        String oldPassword = passwordEditDTO.getOldPassword();
+        String newPassword = passwordEditDTO.getNewPassword();
+        String password = employeeMapper.getById(id).getPassword();
+        if(!password.equals(DigestUtils.md5DigestAsHex(oldPassword.getBytes()))) {
+            throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
+        }else {
+            employeeMapper.update(Employee.builder()
+                                            .id(id)
+                                            .password(DigestUtils.md5DigestAsHex(newPassword.getBytes()))
+                                            .build());
+        }
+
+
     }
 
 }
