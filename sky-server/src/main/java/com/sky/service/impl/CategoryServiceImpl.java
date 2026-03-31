@@ -7,6 +7,7 @@ import com.sky.dto.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.entity.Category;
 import com.sky.mapper.CategoryMapper;
+import com.sky.mapper.DishMapper;
 import com.sky.result.PageResult;
 import com.sky.service.CategoryService;
 import lombok.AllArgsConstructor;
@@ -23,6 +24,8 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Autowired
     private CategoryMapper categoryMapper;
+    @Autowired
+    private DishMapper dishMapper;
 
     /**
      * 分类分页查询
@@ -43,6 +46,7 @@ public class CategoryServiceImpl implements CategoryService {
     //Todo 有菜品的分类不能删除
     @Override
     public void delete(Long id) {
+        dishMapper.countByCategoryId(id);
         categoryMapper.deleteById(id);
     }
 
