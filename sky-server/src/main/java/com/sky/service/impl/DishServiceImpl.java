@@ -110,8 +110,10 @@ public class DishServiceImpl implements DishService {
     public void update(DishDTO dishDTO) {
         Dish dish=new Dish();
         BeanUtils.copyProperties(dishDTO, dish);
+        //修改菜品数据
         dishMapper.update(dish);
         Long dishId = dish.getId();
+        //删除当前菜品对应的口味数据
         dishFlavorMapper.deleteByDishId(dishId);
         List<DishFlavor> flavors = dishDTO.getFlavors();
 
@@ -139,16 +141,21 @@ public class DishServiceImpl implements DishService {
         //判断是否有套餐包含次菜品
         List<Long> setmealIdByDistId = setmealDishMapper.getSetmealIdByDistId(ids);
         if (!CollectionUtils.isEmpty(setmealIdByDistId)){
+
             throw new DeletionNotAllowedException(MessageConstant.DISH_BE_RELATED_BY_SETMEAL);
         }
         //删除菜品
         dishMapper.deleteByIds(ids);
         //删除菜品对应的口味数据
-
-            dishFlavorMapper.deleteByDishIds(ids);
-
+        dishFlavorMapper.deleteByDishIds(ids);
 
 
 
+
+    }
+
+    @Override
+    public List<DishVO> dishListByCategoryId(Long categoryId) {
+         return dishMapper.selectByCategoryId(categoryId);
     }
 }

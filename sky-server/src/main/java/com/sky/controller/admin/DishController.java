@@ -78,11 +78,23 @@ public class DishController {
         return Result.success();
     }
 
+    /**
+     * 批量删除菜品
+     * @param ids
+     * @return
+     */
     @DeleteMapping
     public Result deleteByIds(@RequestParam List<Long> ids){
         log.info("批量删除菜品：{}", ids);
         dishService.deleteByIds(ids);
         return Result.success();
+    }
+
+    @GetMapping("/list")
+    public Result dishListByCategoryId(Long categoryId){
+        log.info("根据分类id查询菜品：{}", categoryId);
+        List<DishVO> list = dishService.dishListByCategoryId(categoryId);
+        return Result.success(list);
 
     }
 

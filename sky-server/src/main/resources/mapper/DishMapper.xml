@@ -59,7 +59,7 @@
         where id = #{id}
 
     </update>
-    <!--判断id集合的停售数量-->
+    <!--判断id集合的起售数量-->
     <select id="countTheNumberOfSuspendedSales" resultType="java.lang.Integer">
         select count(*) from dish where id in (
             <foreach collection="ids" item="id" separator=",">
