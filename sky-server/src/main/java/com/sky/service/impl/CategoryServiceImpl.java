@@ -2,18 +2,26 @@ package com.sky.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.entity.Category;
+import com.sky.entity.Setmeal;
+import com.sky.exception.DeletionNotAllowedException;
 import com.sky.mapper.CategoryMapper;
 import com.sky.mapper.DishMapper;
+import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
 import com.sky.service.CategoryService;
+import com.sky.service.SetmealService;
+import com.sky.vo.SetmealVO;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDateTime;
@@ -26,6 +34,9 @@ public class CategoryServiceImpl implements CategoryService {
     private CategoryMapper categoryMapper;
     @Autowired
     private DishMapper dishMapper;
+
+    @Autowired
+    private SetmealMapper setmealMapper;
 
     /**
      * 分类分页查询
@@ -43,10 +54,20 @@ public class CategoryServiceImpl implements CategoryService {
      * 删除分类
      * @param id
      */
-    //Todo 有菜品的分类不能删除
+    @Transactional
     @Override
     public void delete(Long id) {
-        dishMapper.countByCategoryId(id);
+        Integer i = dishMapper.countByCategoryId(id);
+        if (i>0){
+            throw new DeletionNotAllowedException(MessageConstant.CATEGORY_BE_RELATED_BY_DISH);
+        }
+        Setmeal setmeal = new Setmeal();
+        setmeal.setCategoryId(id);
+        List<Setmeal>list= setmealMapper.getByCategoryId(setmeal);
+        if(!CollectionUtils.isEmpty( list)){
+            throw new DeletionNotAllowedException(MessageConstant.CATEGORY_BE_RELATED_BY_SETMEAL);
+        }
+
         categoryMapper.deleteById(id);
     }
 

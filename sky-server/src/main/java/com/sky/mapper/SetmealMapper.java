@@ -21,6 +21,10 @@ public interface SetmealMapper {
 
 
 
+    /**
+     * 新增套餐
+     * @param setmeal
+     */
     @Options(useGeneratedKeys = true, keyProperty = "id")
     @AutoFill(value = OperationType.INSERT)
     @Insert("insert into setmeal (name, category_id, price, status, " +
@@ -29,12 +33,33 @@ public interface SetmealMapper {
             "#{description}, #{image}, #{createTime}, #{updateTime}, #{createUser}, #{updateUser})")
     void insert(Setmeal setmeal);
 
+    /**
+     * 根据id查询套餐和套餐菜品关系
+     * @param id
+     * @return
+     */
     @Select("select s.*,c.name as categoryName from setmeal s left join category c on s.category_id=c.id where s.id=#{id}")
     SetmealVO selectById(Long id);
 
 
+    /**
+     * 修改套餐
+     * @param setmeal
+     */
     @AutoFill(value = OperationType.UPDATE)
     void update(Setmeal setmeal);
 
+    /**
+     * 批量删除套餐
+     * @param ids
+     */
     void deleteByIds(List<Long> ids);
+
+    /**
+     * 根据分类id查询套餐
+     * @param setmeal
+     * @return
+     */
+
+    List<Setmeal> getByCategoryId(Setmeal setmeal);
 }

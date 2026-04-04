@@ -11,10 +11,11 @@ sky:
     access-key-id: 
     access-key-secret: 
     bucket-name: java-demo-ljx
-
   redis:
     host: localhost
     port: 6379
     database: 10
-
+  wechat:
+    appid: wx3b1465246e28b0bb
+    secret: dc50b76949aef0c9fb60baa76e53a56f
 

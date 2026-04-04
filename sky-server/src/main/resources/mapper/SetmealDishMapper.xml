@@ -23,5 +23,11 @@
                     #{dishId}
                 </foreach>
     </select>
+    <!--根据套餐id查询包含的菜品数据-->
+    <select id="getDishItemVOBySetmealId" resultType="com.sky.vo.DishItemVO">
+        select sd.name ,sd.copies ,d.image ,d.description
+        from setmeal_dish sd , dish d
+        where dish_id=d.id and setmeal_id=#{setmealId}
+    </select>
 
 </mapper>

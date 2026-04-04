@@ -49,6 +49,6 @@ public interface CategoryMapper {
      * @param type
      * @return
      */
-     @Select("select id, type, name, sort, status, create_time, update_time, create_user, update_user from category where type=#{type} and status!=0")
+
      List<Category> typeList(Integer type);
 }

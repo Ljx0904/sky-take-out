@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -149,13 +150,28 @@ public class DishServiceImpl implements DishService {
         //删除菜品对应的口味数据
         dishFlavorMapper.deleteByDishIds(ids);
 
-
-
-
     }
 
+    /**
+     * 根据分类id查询菜品
+     * @param categoryId
+     * @return
+     */
     @Override
     public List<DishVO> dishListByCategoryId(Long categoryId) {
-         return dishMapper.selectByCategoryId(categoryId);
+        Dish dish=Dish.builder()
+                .categoryId(categoryId)
+                .status(1)
+                .build();
+        List<Dish> dishList = dishMapper.selectByCategoryId(dish);
+        List<DishVO> dishVOList=new ArrayList<>();
+        for (Dish d : dishList) {
+            DishVO dishVO=new DishVO();
+            BeanUtils.copyProperties(d, dishVO);
+            List<DishFlavor> f = dishFlavorMapper.selectByDistId(d.getId());
+            dishVO.setFlavors(f);
+            dishVOList.add(dishVO);
+        }
+        return dishVOList;
     }
 }
