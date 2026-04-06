@@ -5,6 +5,7 @@ import com.sky.mapper.OrdersMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
 import com.sky.vo.OrderReportVO;
+import com.sky.vo.SalesTop10ReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 import org.apache.commons.lang.StringUtils;
@@ -27,8 +28,42 @@ public class ReportServiceImpl implements ReportService {
     private UserMapper userMapper;
 
     @Override
-    public TurnoverReportVO getOrdersStatistics(LocalDate begin, LocalDate end) {
-        return null;
+    public OrderReportVO getOrdersStatistics(LocalDate begin, LocalDate end) {
+        List<LocalDate> timeList=new ArrayList();
+        List<Integer> validOrderCountList=new ArrayList<>();
+        List<Integer> orderCountList=new ArrayList<>();
+        Map maps=new HashMap();
+        maps.put("begin", LocalDateTime.of(begin, LocalTime.MIN));
+        maps.put("end", LocalDateTime.of(end, LocalTime.MAX));
+        Integer totalOrderCount = ordersMapper.countMap(maps);
+        maps.put("status", Orders.COMPLETED);
+        Integer validOrderCount = ordersMapper.countMap(maps);
+
+        while (!begin.isAfter( end)){
+            timeList.add(begin);
+            LocalDateTime beginTime=LocalDateTime.of(begin, LocalTime.MIN);
+            LocalDateTime endTime=LocalDateTime.of(begin, LocalTime.MAX);
+            Map map=new HashMap();
+            map.put("begin", beginTime);
+            map.put("end", endTime);
+            Integer totalCount=ordersMapper.countMap(map);
+            map.put("status", Orders.COMPLETED);
+            Integer validCount=ordersMapper.countMap(map);
+
+            validOrderCountList.add(validCount);
+            orderCountList.add(totalCount);
+
+
+            begin = begin.plusDays(1);
+        }
+        return OrderReportVO.builder()
+                .dateList(StringUtils.join(timeList,","))
+                .orderCountList(StringUtils.join(orderCountList,","))
+                .validOrderCountList(StringUtils.join(validOrderCountList,","))
+                .totalOrderCount(totalOrderCount)
+                .validOrderCount(validOrderCount)
+                .orderCompletionRate( validOrderCount.doubleValue()/totalOrderCount)
+                .build();
     }
 
     @Override
@@ -91,6 +126,33 @@ public class ReportServiceImpl implements ReportService {
         return new UserReportVO(StringUtils.join(timeList,","),
                 StringUtils.join(totalUserList,","),
                 StringUtils.join(newUserList,",")
+                );
+    }
+
+    /**
+     * 销量排名
+     * @param begin
+     * @param end
+     * @return
+     */
+    @Override
+    public SalesTop10ReportVO getDishTop10(LocalDate begin, LocalDate end) {
+       LocalDateTime beginTime=LocalDateTime.of(begin, LocalTime.MIN);
+       LocalDateTime endTime=LocalDateTime.of(end, LocalTime.MAX);
+       Map map=new HashMap();
+       map.put("begin", beginTime);
+       map.put("end", endTime);
+       map.put("status", Orders.COMPLETED);
+       List<Map<String, Object>> dishList=ordersMapper.getTop10(map);
+       List<String> nameList=new ArrayList();
+       List<String> numberList=new ArrayList();
+       for (Map<String, Object> dish : dishList) {
+           nameList.add((String) dish.get("name"));
+           numberList.add(dish.get("number").toString());
+       }
+
+        return new SalesTop10ReportVO(StringUtils.join(nameList,","),
+                StringUtils.join(numberList,",")
                 );
     }
 }

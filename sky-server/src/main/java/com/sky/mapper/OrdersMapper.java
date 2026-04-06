@@ -59,4 +59,9 @@ public interface OrdersMapper {
 
 
     Double getTurnoverStatistics(Map map);
+
+    Integer countMap(Map map);
+
+
+    List<Map<String, Object>> getTop10(Map map);
 }
