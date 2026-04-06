@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -15,6 +16,8 @@ import com.sky.result.PageResult;
 import com.sky.service.OrdersService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.*;
+import com.sky.websocket.WebSocketServer;
+import io.swagger.util.Json;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,7 +27,9 @@ import org.springframework.util.CollectionUtils;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,9 +45,10 @@ public class OrdersServiceImpl implements OrdersService {
     private AddressBookMapper addressBookMapper;
     @Autowired
     private UserMapper userMapper;
-
     @Autowired
     private WeChatPayUtil weChatPayUtil;
+    @Autowired
+    private WebSocketServer webSocketServer;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -141,6 +147,7 @@ public class OrdersServiceImpl implements OrdersService {
      *
      * @param outTradeNo
      */
+    @Transactional
     public void paySuccess(String outTradeNo) {
 
         // 根据订单号查询订单
@@ -155,9 +162,24 @@ public class OrdersServiceImpl implements OrdersService {
                 .build();
 
         ordersMapper.update(orders);
+
+        //通过websocket向客户端推送信息 type orderId content
+
+        Map map=new HashMap();
+        map.put("type",1);//1表示来单提醒,2.表示客户端催单
+        map.put("orderId",ordersDB.getId());
+        map.put("content","订单号："+outTradeNo);
+
+        String jsonString = JSON.toJSONString(map);
+        webSocketServer.sendToAllClient(jsonString);
     }
 
 
+    /**
+     * 历史订单查询
+     * @param ordersPageQueryDTO
+     * @return
+     */
     @Transactional(rollbackFor = Exception.class)
     @Override
     public PageResult historyOrders(OrdersPageQueryDTO ordersPageQueryDTO) {
@@ -362,5 +384,25 @@ public class OrdersServiceImpl implements OrdersService {
         Integer confirmed = ordersMapper.countStatus(Orders.CONFIRMED);
         Integer deliveryInProgress = ordersMapper.countStatus(Orders.DELIVERY_IN_PROGRESS);
         return new OrderStatisticsVO(toBeConfirmed,confirmed,deliveryInProgress);
+    }
+
+    /**
+     * 催单
+     * @param id
+     */
+    @Override
+    public void reminder(Long id) {
+        OrdersDetailQueryVO ordersDetailQueryVO = ordersMapper.getById(id);
+        if (ordersDetailQueryVO!=null &&ordersDetailQueryVO.getStatus()==Orders.REFUND) {
+            Map map = new HashMap();
+            map.put("type", 2);//1表示来单提醒,2.表示客户端催单
+            map.put("orderId", id);//订单id
+            map.put("content", "订单号：" + ordersDetailQueryVO.getNumber());
+            String jsonString = JSON.toJSONString(map);
+            webSocketServer.sendToAllClient(jsonString);
+        }else {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
     }
 }

@@ -39,9 +39,11 @@ public class OrdersController {
 
     public Result<OrderPaymentVO> payment(@RequestBody OrdersPaymentDTO ordersPaymentDTO) throws Exception {
         log.info("订单支付：{}", ordersPaymentDTO);
-        OrderPaymentVO orderPaymentVO = ordersService.payment(ordersPaymentDTO);
-        log.info("生成预支付交易单：{}", orderPaymentVO);
-        return Result.success(orderPaymentVO);
+        //OrderPaymentVO orderPaymentVO = ordersService.payment(ordersPaymentDTO);
+        //log.info("生成预支付交易单：{}", orderPaymentVO);
+        ordersService.paySuccess(ordersPaymentDTO.getOrderNumber());
+        //return Result.success(orderPaymentVO);
+        return Result.success();
     }
 
     /**
@@ -80,6 +82,13 @@ public class OrdersController {
     public Result repetition(@PathVariable Long id){
         log.info("再来一单：{}", id);
         ordersService.repetition(id);
+        return Result.success();
+    }
+
+    @GetMapping("/reminder/{id}")
+    public Result reminder(@PathVariable Long id){
+        log.info("订单提醒：{}", id);
+        ordersService.reminder(id);
         return Result.success();
     }
 
