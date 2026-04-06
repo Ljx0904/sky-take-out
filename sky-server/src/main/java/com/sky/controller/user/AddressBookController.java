@@ -17,6 +17,11 @@ public class AddressBookController {
     @Autowired
     private AddressBookService addressBookService;
 
+    /**
+     * 新增地址
+     * @param addressBook
+     * @return
+     */
     @PostMapping
     public Result save(@RequestBody AddressBook addressBook){
         log.info("新增地址：{}", addressBook);
@@ -25,12 +30,16 @@ public class AddressBookController {
 
     }
 
+
     @GetMapping("/list")
     public Result<List<AddressBook>> list(){
         log.info("查询地址");
         return Result.success(addressBookService.list());
     }
 
+    /**
+     * 根据id查询地址
+     */
     @GetMapping("/{id}")
     public Result<AddressBook> getById(@PathVariable Long id){
         log.info("查询地址：{}", id);
@@ -67,4 +76,6 @@ public class AddressBookController {
         }
         return Result.success(addressBook);
     }
+
+
 }
