@@ -48,20 +48,42 @@ public interface OrdersMapper {
 
     /**
      * 各个状态的订单数量统计
-     * @param toBeConfirmed
+     * @param status
      * @return
      */
     @Select("select count(id) from orders where status = #{status}")
-    Integer countStatus(Integer toBeConfirmed);
+    Integer countStatus(Integer status);
 
+    /**
+     * 查询指定状态的订单
+     * @param status
+     * @param time
+     * @return
+     */
     @Select("select * from orders where status=#{status} and order_time<#{time}")
     List<Orders> getByTimeoutOfOrders(Integer status, LocalDateTime time);
 
 
+    /**
+     * 统计指定时间区间内的营业额数据
+     * @param map
+     * @return
+     */
     Double getTurnoverStatistics(Map map);
 
+    /**
+     * 统计指定时间区间内的订单数量
+     * @param map
+     * @return
+     */
     Integer countMap(Map map);
 
 
+    /**
+     * 查询top10
+     * @param map
+     * @return
+     */
     List<Map<String, Object>> getTop10(Map map);
+
 }

@@ -29,5 +29,10 @@ public interface UserMapper {
     @Select("select * from user where id=#{userId}")
     User getById(Long userId);
 
+    /**
+     * 统计指定时间区间内，新增用户的数量
+     * @param map
+     * @return
+     */
     Integer getNewUser(Map map);
 }

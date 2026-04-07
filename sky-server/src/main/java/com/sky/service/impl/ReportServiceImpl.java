@@ -66,6 +66,12 @@ public class ReportServiceImpl implements ReportService {
                 .build();
     }
 
+    /**
+     * 营业额统计
+     * @param begin
+     * @param end
+     * @return
+     */
     @Override
     public TurnoverReportVO getTurnoverStatistics(LocalDate begin, LocalDate end) {
 

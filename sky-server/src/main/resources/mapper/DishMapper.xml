@@ -67,4 +67,19 @@
             </foreach>
         ) and status = 1
     </select>
+
+    <select id="countMap" resultType="java.lang.Integer">
+        select count(*) from dish
+        <where>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="begin != null">
+                and create_time &gt;= #{begin}
+            </if>
+            <if test="ent!= null">
+                and  create_time &lt;= #{begin}
+            </if>
+        </where>
+    </select>
 </mapper>
